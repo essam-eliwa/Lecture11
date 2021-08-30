@@ -30,11 +30,13 @@ class _EditProductScreenState extends State<EditProductScreen> {
     'price': '',
     'imageUrl': '',
   };
-  var _isInit = true;
-
+  var _isInit;
+  var _isLoading;
   @override
   void initState() {
     _imageUrlFocusNode.addListener(_updateImageUrl);
+    _isInit = true;
+    _isLoading = false;
     super.initState();
   }
 
@@ -88,14 +90,27 @@ class _EditProductScreenState extends State<EditProductScreen> {
       return;
     }
     _form.currentState.save();
+    setState(() {
+      _isLoading = true;
+    });
     if (_editedProduct.id != null) {
       provider.Provider.of<Products>(context, listen: false)
           .updateProduct(_editedProduct.id, _editedProduct);
+      setState(() {
+        _isLoading = false;
+      });
+      Navigator.of(context).pop();
     } else {
       provider.Provider.of<Products>(context, listen: false)
           .addProduct(_editedProduct);
+      Navigator.of(context).pop();
+      /* .then((_) {
+        setState(() {
+          _isLoading = false;
+        });
+        Navigator.of(context).pop();
+      });*/
     }
-    Navigator.of(context).pop();
   }
 
   @override

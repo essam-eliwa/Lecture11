@@ -1,5 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
-
+import 'package:http/http.dart' as http;
 import './product.dart';
 
 class Products with ChangeNotifier {
@@ -36,6 +37,14 @@ class Products with ChangeNotifier {
       imageUrl:
           'https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Cast-Iron-Pan.jpg/1024px-Cast-Iron-Pan.jpg',
     ),
+    Product(
+      id: 'p5',
+      title: 'A Pan 2',
+      description: 'Prepare any meal you want.',
+      price: 55.99,
+      imageUrl:
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Cast-Iron-Pan.jpg/1024px-Cast-Iron-Pan.jpg',
+    ),
   ];
 
   List<Product> get items {
@@ -51,15 +60,30 @@ class Products with ChangeNotifier {
   }
 
   void addProduct(Product product) {
-    final newProduct = Product(
-      title: product.title,
-      description: product.description,
-      price: product.price,
-      imageUrl: product.imageUrl,
-      id: DateTime.now().toString(),
-    );
-    _items.add(newProduct);
-    notifyListeners();
+    const url = 'https://csc422-rldb-default-rtdb.firebaseio.com/items.json';
+    //'https://csc422-f20-lec12-default-rtdb.firebaseio.com/products.json';
+    //https://live.staticflickr.com/4043/4438260868_cc79b3369d_z.jpg
+    http
+        .post(url,
+            body: json.encode({
+              'title': product.title,
+              'imageUrl': product.imageUrl,
+              'describtion': product.description,
+              'price': product.price,
+              'isFavorite': product.isFavorite,
+            }))
+        .then((res) {
+      final newProduct = Product(
+          title: product.title,
+          description: product.description,
+          price: product.price,
+          imageUrl: product.imageUrl,
+          id: jsonDecode(res.body)['name']);
+      _items.add(newProduct);
+      notifyListeners();
+    }).catchError((error) {
+      print(error);
+    });
   }
 
   void updateProduct(String id, Product newProduct) {
